@@ -1,0 +1,63 @@
+---
+title: Lending Agent
+description: Implementation, architecture, safety, privacy, and regulatory guidance for an AI-mediated agentic credit broking journey.
+template: splash
+hero:
+  tagline: An AI-mediated agentic credit broking demo. Plain-English customer journey, structured disclosures and consents, sequential lender waterfall, replayable audit log.
+  image:
+    file: ../../assets/logo.svg
+  actions:
+    - text: Open the simulation
+      link: https://lending-agent.vercel.app
+      icon: external
+      variant: primary
+    - text: What it is
+      link: /introduction/what-it-is/
+      icon: right-arrow
+    - text: View source
+      link: https://github.com/bgood11/lending-agent
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Quick links by audience
+
+<CardGrid>
+	<LinkCard title="For retailers" href="/implementation/retailers/adoption-path/" description="If you sell solar, batteries, EVs, or any high-value home-improvement that customers finance, start here." />
+	<LinkCard title="For brokers" href="/implementation/brokers/adoption-path/" description="If you hold the FCA permission and arrange consumer credit through a panel of lenders." />
+	<LinkCard title="For lenders" href="/implementation/lenders/waterfall-protocol/" description="If you sit on a broker's panel and want to understand what changes when the journey is agent-mediated." />
+	<LinkCard title="For regulators & risk teams" href="/regulatory/overview/" description="Consumer Duty, CONC, FCA AI strategy, vulnerable customers, replay-as-evidence." />
+</CardGrid>
+
+## What you'll find here
+
+<CardGrid>
+	<Card title="Product walkthrough" icon="document">
+		The journey end-to-end: installer voice intake, customer phone journey, audit dashboard. [Start here](/product/customer-journey/).
+	</Card>
+	<Card title="Architecture" icon="setting">
+		State machine, reconciliation, event protocol, cold-start recovery, mock-vs-real boundary. [Read the architecture](/architecture/overview/).
+	</Card>
+	<Card title="Safety" icon="seti:lock">
+		Threat model, prompt injection, hallucination defences, fail-safe state machine, model evaluations. [Safety overview](/safety/overview/).
+	</Card>
+	<Card title="Privacy" icon="information">
+		UK GDPR, DPIA framework, data minimisation, retention, sub-processors, PECR. [Privacy overview](/privacy/overview/).
+	</Card>
+	<Card title="Regulatory" icon="open-book">
+		Consumer Duty, CONC, FCA AI strategy, vulnerable customers, replay-as-evidence. [Regulatory overview](/regulatory/overview/).
+	</Card>
+	<Card title="Deploy your own" icon="rocket">
+		Run locally, deploy to Vercel, wire a custom domain, harden for production. [Deploy guide](/deploy/local/).
+	</Card>
+</CardGrid>
+
+## The TL;DR
+
+A working prototype that takes a UK consumer-credit journey from doorstep to lender decision through an AI agent. The journey is a sequence of regulated gates (status disclosure, eligibility, indicative quote, application details, vulnerability check, credit search consent, pre-contract, sequential lender waterfall, decision). Every gate produces structured evidence. Every disclosure is replayable for compliance scoring. Customers can withdraw at any time.
+
+The model is a **narrator over a state machine**. Regulated content never comes from the model. The deterministic side recovers from any model confusion automatically.
+
+> This is a personal side project, built independently of any firm. The journey, audit, and replay layers are real. The lender panel, decisions, and credit search are mocked. Documentation is for productisation conversations.
