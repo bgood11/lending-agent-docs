@@ -31,6 +31,8 @@ sequenceDiagram
 
 The retailer creates a customer link that carries a signed seed parameter in the URL. The seed contains the basket value, retailer reference, and a minimal customer identifier (typically first name and a hashed identifier). It does **not** carry full identity data, payment details, or any creditworthiness attributes. The signature prevents tampering and provides integrity for audit.
 
+Customer due diligence under the [Money Laundering Regulations 2017](https://www.legislation.gov.uk/uksi/2017/692/contents) sits **upstream** of the seed where the broker is in MLR scope. The agentic surface assumes a CDD outcome has already been recorded by the broker's identity stack; the journey does not perform CDD itself, and the seed does not carry CDD-grade identity attestations.
+
 - **Data captured:** basket amount, retailer ID, short-lived nonce, optional given name.
 - **Where it lives:** in the URL during the navigation, then decoded into in-memory case state once the customer surface mounts. The seed is not persisted to a cookie.
 - **Privacy implication:** a URL is logged by intermediate proxies and by the user's browser history. The minimisation choice is to keep the seed limited and time-bound; see [data minimisation](./data-minimisation).

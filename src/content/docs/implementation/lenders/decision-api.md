@@ -5,6 +5,18 @@ description: The LenderAdapter interface, sync vs async patterns, mTLS, rate lim
 
 This page is the lender's integration cookbook. It covers the `LenderAdapter` contract, how a typical lender wraps their existing decision API behind it, authentication and rate-limiting choices, and the synchronous-versus-asynchronous question that comes up on every integration.
 
+## Demo vs production shape
+
+A note up front: this page describes the production-shape `LenderAdapter`. The demo's `runWaterfall` in `lib/decision-engine.ts` is synchronous and operates on a hard-coded `LenderProfile[]` array; there is no `LenderAdapter` interface in the repo today. The production adapter shape below is a forward-looking design, validated against the contract `runWaterfall` exposes (give it a `caseState`, get back a `WaterfallResult`).
+
+When you replace the simulated panel with real lenders, three things change at once:
+
+- `runWaterfall` becomes `async` and `await`s each adapter's `decide` call.
+- The hard-coded `LENDERS` array becomes a panel definition loaded from configuration.
+- `simulateLenderResponse` is replaced by per-lender adapter modules.
+
+The case state, the reconciliation rules, and the audit shape do not change.
+
 ## The `LenderAdapter` contract
 
 The broker calls a small interface per lender:

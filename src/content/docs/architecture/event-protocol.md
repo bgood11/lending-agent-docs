@@ -79,6 +79,12 @@ This is the protocol-aligned pattern: **regulated moments use deterministic UI e
 
 JSON extraction uses brace-balancing rather than regex, so apostrophes in values (names like "John's") don't break parsing. There's a real bug in the codebase history where a regex-based parser truncated JSON at the first apostrophe; the brace-walker is the fix.
 
+The parser tolerates three JSON dialects in fallback order: literal JSON, then JSON with `\"` escape sequences flattened, then JSON with smart quotes (`'` `'` `"` `"`) folded back to ASCII. If all three fail the event is dropped silently. This is deliberate: a malformed event tag should never crash a turn. The agent will retry on the next turn, and reconciliation backstops anything load-bearing.
+
+## Streaming vs non-streaming today
+
+The parser is streaming-capable but the chat route currently calls `generateText`, which returns a complete string. `stripEventTags(text)` is the convenience function used; it feeds the full string through `AgentStreamParser` once and flushes. Switching to a streaming chat route in future is a one-call swap (`streamText` plus per-chunk `parser.feed`), with no protocol change.
+
 ## Streaming-friendly
 
 The parser handles tags split across stream chunks. Example:
@@ -113,7 +119,7 @@ A turn can legitimately consist of nothing but events:
 "<agent-event type=\"acknowledge_disclosure\" data='{\"id\":\"service_status\"}' />"
 ```
 
-The events apply. But the display text is empty. The customer route detects this, applies the events, and **does not** persist a transcript turn for this. There's no ghost message in the chat history that could later be sent back to the API as an empty content block (which the API rejects).
+The events apply. But the display text is empty. The customer route detects this (`trimmedDisplay.length === 0`), applies the events, and **does not** persist a transcript turn. The model history builder also filters any prior empty assistant message out before calling Anthropic, then collapses any consecutive same-role turns the filter creates. Both checks together mean the API never sees an empty content block (which it rejects) and never sees two consecutive same-role messages (which it also rejects).
 
 See [Empty-turn protection](/safety/empty-turn-protection/).
 
@@ -121,11 +127,33 @@ See [Empty-turn protection](/safety/empty-turn-protection/).
 
 The Anthropic API offers a tool-use feature. The demo doesn't use it. Why:
 
-1. **Streaming UX.** Tool use forces the model into a non-streaming turn. With inline event tags, the prose streams in real time and events are extracted as they arrive.
+1. **Streaming UX.** Tool calls do stream as deltas, but the customer-facing surface needs the prose and the events interleaved on the same turn. Inline tags let the prose stream as text while events are extracted from the same buffer; tool-use forces a separate tool block per call and adds round-trip handling for tool results that aren't needed here (the events are fire-and-forget state mutations, not function calls expecting a return value).
 2. **Simpler parser.** A streaming tag parser is ~150 lines. A robust tool-use handler with retries, partial responses, and recovery is more.
 3. **Matches the protocol.** The agentic credit broking protocol describes structured events as the model's surface, not function calls.
 
 Both approaches would work. Inline events fit better with the streaming, prose-first agent UX.
+
+## Idempotency
+
+Most events in the protocol are idempotent in the case-state sense:
+
+- `present_disclosure` deduplicates on `id`: a duplicate event for an already-presented disclosure is dropped (the first `presentedAt` wins).
+- `acknowledge_disclosure` only sets `acknowledgedAt` if the field is currently undefined. A second ack on the same disclosure is a no-op.
+- `capture_consent` replaces any prior consent of the same `consentType`, so a duplicate is harmless and the latest grant/refuse wins.
+- `record_*_facts` events shallow-merge into their target object. Re-applying the same payload produces the same case state.
+- `case_outcome` is set-once; a second `case_outcome` event on a case that already has one is a no-op.
+
+Events that are not idempotent in the same sense:
+
+- `submit_application` always sets `status = "submitting"`, but the route handler running the waterfall is what matters. The route checks for `caseState.waterfall` already being set before re-running.
+- `accept_counter_offer` is only meaningful when `awaitingCounterDecision` is true; on a second call it is a no-op because the flag has been cleared.
+- `refuse_counter_offer` clears the flag; a second call is a no-op for the same reason.
+
+In practice, the model occasionally re-emits an event from a previous turn after a retry. The deduplication above means this is invisible to the customer. A production deployment that streams events to a durable audit store should still attach a per-event UUID at emit time and dedupe on it at the store boundary, because the audit log cares about exact event counts even when the case-state effect is the same.
+
+## Versioning
+
+The event taxonomy is unversioned today. Adding a new event type is non-breaking. Removing one would break older replays; in practice, old types stay in the union as `// legacy` markers (see `request_decision`, `select_offer` for the parallel-offers flow). When a payload shape needs to change incompatibly, prefer adding a sibling event type with a new name and a migration path rather than changing an existing payload.
 
 ## Adding new events
 

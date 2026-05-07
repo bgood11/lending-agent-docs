@@ -62,6 +62,14 @@ A malicious update to the Anthropic SDK or another dependency could try to exfil
 
 **Residual risk.** This is a generic web-app supply-chain risk and is best treated by the broker's existing third-party risk programme. It is called out here for completeness and aligns with [OWASP LLM05 Supply Chain](https://owasp.org/www-project-top-10-for-large-language-model-applications/).
 
+## Adversary 6: drift, bias, and disparate outcomes
+
+Not every threat is hostile. A model upgrade, a prompt change, or a shift in customer demographics can produce a slow drift in conversational quality or in the distribution of outcomes across protected characteristics. Under [section 19 of the Equality Act 2010](https://www.legislation.gov.uk/ukpga/2010/15/section/19), a facially neutral practice that disadvantages a group sharing a protected characteristic is unlawful unless the firm can show it is a proportionate means of achieving a legitimate aim. The Consumer Duty cross-cutting rule on avoiding foreseeable harm reinforces this expectation; the [ICO's guidance on AI fairness, bias and discrimination](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/how-do-we-ensure-fairness-in-ai/what-about-fairness-bias-and-discrimination/) is the working reference.
+
+**Mitigations.** The deterministic decision-engine does not consult the conversational layer; eligibility and price are computed from structured fields. The replay engine (see [model evaluations](/safety/model-evaluations)) supports drift detection and counterfactual replay, both of which are the empirical layer needed to satisfy the firm that its journey is not producing a pattern of disadvantage. The vulnerability indicator is structurally separated from eligibility (see [vulnerable customer protection](/safety/vulnerable-customer-protection)), so a disclosure cannot worsen a customer's outcome.
+
+**Residual risk.** A residual that no architectural control can eliminate is the foundation model's own training. Where bias is baked into the underlying model, the broker is dependent on the model provider's evaluation and red-teaming work. Periodic re-evaluation against the firm's replay suite, plus monitoring of outcome distributions in production, are the practical defences.
+
 ## What is explicitly out of scope
 
 Network-level attacks, denial of service, and account-takeover are handled by the hosting platform and the broker's identity stack. They are not specific to the AI surface. The safety design here assumes the application server is healthy and reachable.

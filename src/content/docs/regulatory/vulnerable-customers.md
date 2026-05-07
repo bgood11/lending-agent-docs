@@ -55,7 +55,7 @@ A live deployment would need to extend the demo's vulnerability handling in seve
 
 - **Trained human escalation paths**: with FG21/1-aware agents on the receiving end. The demo signposts but does not connect.
 - **A formal vulnerability framework** at firm level, including governance, training, and reporting per FG21/1's expectations.
-- **Outcomes monitoring** that compares case results across vulnerability indicators to detect any pattern of disadvantage.
-- **Data retention rules** consistent with [ICO guidance on AI and data protection](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/), particularly for special-category data (health) where Article 9 of the UK GDPR sets a higher bar.
+- **Outcomes monitoring** that compares case results across vulnerability indicators to detect any pattern of disadvantage. This is also the operational layer that lets a firm satisfy itself it is not engaging in indirect discrimination under [section 19 of the Equality Act 2010](https://www.legislation.gov.uk/ukpga/2010/15/section/19), where any disparity must be capable of objective justification as a proportionate means of achieving a legitimate aim.
+- **Data retention rules** consistent with [ICO guidance on AI and data protection](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/artificial-intelligence/guidance-on-ai-and-data-protection/), particularly for special-category data (health) where Article 9 of the UK GDPR sets a higher bar; see [privacy/uk-gdpr](/privacy/uk-gdpr) and [privacy/data-minimisation](/privacy/data-minimisation) for how the demo's design treats vulnerability indicators as counts rather than free text by default.
 
 The demo is a starting point. The work of treating vulnerable customers fairly does not stop at the journey design; it runs through the whole firm.

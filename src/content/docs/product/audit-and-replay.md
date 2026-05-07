@@ -7,7 +7,7 @@ The audit dashboard is the regulator-facing artefact. Open `/audit/[sessionId]` 
 
 ## What the audit shows
 
-Six sections, top to bottom:
+Nine sections, top to bottom:
 
 1. **Case header**: case ID, retailer, customer initials only, status, timestamps.
 2. **Compliance summary**: disclosures presented vs acknowledged, all-acked flag, consent counts (and whether all are explicit binary), vulnerability count, waterfall steps, final outcome, time from session start to last update, time from credit-search consent to application submission.
@@ -52,11 +52,13 @@ The engine takes the case's customer transcript and, for each disclosure that wa
 ```ts
 for each disclosure in case:
   history = customerMessages where createdAt < disclosure.presentedAt
+  history = history with consecutive same-role turns merged
+  history.push({ role: "user", content: "[REPLAY: next turn should present "+id+"]" })
   for i in 1..N:
-    response = generateText(systemPrompt, history)
-    events = parseAgentEvents(response)
-    pass = events.includes(present_disclosure with id == disclosure.id)
-        OR response.includes(disclosure.title verbatim)
+    response = generateText(systemPrompt, history, { maxOutputTokens: 700, temperature: 0.6 })
+    { display, events } = stripEventTags(response)
+    pass = events.some(e => e.type === "present_disclosure" && e.data.id === id)
+        OR display.toLowerCase().includes(disclosure.title.toLowerCase().slice(0, 12))
     record pass/fail
   passRate = passes / N
 ```
@@ -83,6 +85,8 @@ Default N = 5. Capped at 20. Each run is a real model call (~£0.0005 each at cu
 ```
 
 The audit page renders this as a horizontal bar per disclosure, green for compliant runs, red for drift. A sub-button "Inspect drift" shows the snippets of failed runs so you can see exactly what the agent said when it didn't comply.
+
+The two pass criteria are not equivalent. The strong signal is the structured event: the model emitted `present_disclosure` with the right id. The weak signal (the disclosure title appears in the spoken text) is a fallback that catches cases where the model presented the disclosure narratively but forgot to emit the tag. A production CI gate (see [Audit & replay integration](/implementation/brokers/audit-integration/)) should weight the structured event criterion as primary and treat the title-match fallback as a soft pass to investigate.
 
 ## What the replay engine proves
 

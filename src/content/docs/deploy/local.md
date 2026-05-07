@@ -7,7 +7,7 @@ The local-development setup takes about 5 minutes from a fresh clone.
 
 ## Prerequisites
 
-- Node 20+ (the demo is on Node 24 LTS but anything 20+ works)
+- Node 20+ (the demo is built and tested against Node 22 LTS; anything 20+ works)
 - pnpm (`npm install -g pnpm`)
 - An [Anthropic API key](https://console.anthropic.com/) with Claude Sonnet 4.6 access
 

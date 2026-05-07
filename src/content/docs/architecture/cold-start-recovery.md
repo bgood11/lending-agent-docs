@@ -49,7 +49,7 @@ The encoding is URL-safe so the seed can travel as a query parameter. Typical se
 
 ## Hydration semantics
 
-`hydrateFromSeed` is **authoritative when the seed has more turns than memory**:
+`hydrateFromSeed` is **authoritative when the seed has at least as many turns as memory on either side of the conversation**:
 
 ```ts
 const seedIsAuthoritative =
@@ -60,7 +60,11 @@ const seedIsAuthoritative =
 if (!seedIsAuthoritative) return existing.case;
 ```
 
-The reasoning: if the seed has more turns than what's currently in memory, we're probably on a fresh cold instance and the seed is the source of truth. If memory has more turns than the seed, memory has seen a more recent turn and we should preserve it.
+Three things to notice in that condition:
+
+1. The `||` between the two side comparisons is intentional. If the seed has more customer turns OR more installer turns than memory, the seed wins the whole session (case + both message lists). One side being more recent is enough to declare the seed authoritative.
+2. The comparison is `>=`, not `>`. A seed with exactly the same number of turns wins, which means a stale-but-equal seed can overwrite memory. In practice the case-state field in the seed is also recent, so this is acceptable; the seed is rarely older than memory at equal turn count.
+3. There's no signature or HMAC check. A malformed seed fails JSON parse and returns `null`; a valid-shaped but wrong-session seed is rejected by the `parsed.case.sessionId !== sessionId` check earlier in the function. Tampering with the case state itself is not detected in the demo and would need a signed seed in production.
 
 This is messy. In production you'd swap to a real store and the seed would be a recovery mechanism, not the primary source of truth. See [Production hardening](/deploy/production-hardening/).
 
@@ -102,15 +106,16 @@ See [Privacy: data flow](/privacy/data-flow/) and [Privacy: data minimisation](/
 
 ## Every state-reading route hydrates
 
-Four routes accept a seed:
+Five routes accept a seed:
 
 - `POST /api/chat/customer`, accepts seed in body
+- `POST /api/chat/installer`, accepts seed in body
 - `GET /api/audit/[sessionId]?seed=...`, accepts seed in query string
 - `POST /api/audit/[sessionId]/replay`, accepts seed in body
 - `GET /api/session/[sessionId]?seed=...`, accepts seed in query string
-- `POST /api/session/[sessionId]/seed`, accepts seed in body, hydrates only
+- `POST /api/session/[sessionId]/seed`, accepts seed in body and only hydrates (no read-side reconciliation)
 
-Plus `POST /api/session` to create new sessions.
+Plus `POST /api/session` to create new sessions, which never accepts a seed because the caller hasn't been given one yet.
 
 This uniformity is on purpose. Any route that reads state must be able to recover from a cold instance. Any route that doesn't would be a bug-in-waiting.
 

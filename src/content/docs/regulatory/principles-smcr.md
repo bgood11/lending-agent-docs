@@ -5,7 +5,7 @@ description: PRIN 7, 9 and 12, the SMCR, and the broker as model owner.
 
 ## The Principles
 
-The FCA's [Principles for Businesses (PRIN)](https://handbook.fca.org.uk/handbook/PRIN/) are the high-level rules that sit above every sectoral sourcebook. They are short, drafted in plain English, and binding on every authorised firm. The Principles most directly engaged by an agentic broking journey are 7, 9, and 12.
+The FCA's [Principles for Businesses (PRIN)](https://www.handbook.fca.org.uk/handbook/PRIN/) are the high-level rules that sit above every sectoral sourcebook. They are short, drafted in plain English, and binding on every authorised firm. The Principles most directly engaged by an agentic broking journey are 7, 9, and 12.
 
 ### Principle 7: communications with clients
 
@@ -21,7 +21,7 @@ The demo's design avoids advice. The agent presents the eligibility result, surf
 
 ### Principle 12: Consumer Duty
 
-Principle 12 is the operative Principle for in-scope products. The full text is short: "A firm must act to deliver good outcomes for retail customers". The detailed mechanics sit in [PRIN 2A](https://handbook.fca.org.uk/handbook/prin2a) and the [Consumer Duty](./consumer-duty/) page expands on each outcome.
+Principle 12 is the operative Principle for in-scope products. The full text is short: "A firm must act to deliver good outcomes for retail customers". The detailed mechanics sit in [PRIN 2A](https://www.handbook.fca.org.uk/handbook/PRIN/2A.html) and the [Consumer Duty](./consumer-duty/) page expands on each outcome.
 
 The interaction between Principles 7, 9 and 12 is set out in [FG22/5](https://www.fca.org.uk/publication/finalised-guidance/fg22-5.pdf). The short version: where Principle 12 applies, it imposes a higher and more exacting standard than Principles 6 or 7 would have done; where it does not, Principles 6 and 7 continue. Principle 9 sits alongside Principle 12 rather than being replaced.
 
@@ -33,13 +33,15 @@ The FCA and PRA have confirmed that the SMCR applies to AI use in regulated firm
 
 The "named senior manager" point is doing more work than it appears. The senior manager cannot delegate accountability. They can delegate execution, but if the agent malfunctions and causes consumer harm, the FCA can pursue the senior manager personally. They are obliged to be able to show that they took reasonable steps: validated the model, kept it under review, monitored outcomes, escalated when monitoring flagged drift, and retained the evidence.
 
+Underneath the SMF holder, the [FCA's Conduct Rules](https://www.handbook.fca.org.uk/handbook/COCON/) (COCON) bind every certified person and (in their reduced form) every other employee. Rule 1 ("you must act with integrity") and Rule 4 ("you must pay due regard to the interests of customers and treat them fairly") apply directly to the staff who configure prompts, curate disclosures, review replay artefacts, or sign off model promotions. Configuring an agent is regulated work; firms should treat it that way in their certification population.
+
 ## The model-owner concept
 
 It helps to think about responsibility in two layers. The agent is a tool. The broker is the firm. The firm is accountable for the tool's conduct just as it would be for a human broker's conduct. That is the model-owner concept: the firm owns the model in the sense that matters to the regulator, regardless of which vendor built it, which cloud runs it, or which third party supplied the underlying model weights.
 
 The model-owner concept has consequences across the lifecycle:
 
-- **Procurement**: the firm cannot rely on a vendor's compliance attestation in lieu of its own validation. SYSC 8 (outsourcing) and the FCA's [operational resilience](https://www.fca.org.uk/firms/operational-resilience) regime apply.
+- **Procurement**: the firm cannot rely on a vendor's compliance attestation in lieu of its own validation. [SYSC 8](https://www.handbook.fca.org.uk/handbook/SYSC/8/) (outsourcing) and the FCA's [operational resilience](https://www.fca.org.uk/firms/operational-resilience) regime under [PS21/3](https://www.fca.org.uk/publications/policy-statements/ps21-3-building-operational-resilience) apply. The agent platform and the model provider are typically inside the firm's mapping of "important business services" and inside its third-party concentration analysis. The firm-level deadline to operate within impact tolerances was 31 March 2025.
 - **Validation**: pre-deployment testing, including against vulnerability scenarios, must be documented and repeatable.
 - **Monitoring**: post-deployment, the firm must watch outcomes and act on what it sees. Monitoring evidence is the firm's responsibility, not the vendor's.
 - **Incident response**: where the agent causes harm, the firm responds. Vendor support is part of the response, not a substitute for it.
@@ -50,4 +52,4 @@ The demo's audit log and replay engine are designed to make each layer cheaper. 
 
 The broker is accountable for the conduct of the journey: status disclosure, eligibility, adequate explanation, vulnerability handling, pre-contract confirmation, and the data passed to the lender. The lender is accountable for the credit decision itself: the creditworthiness assessment under CONC 5, the affordability check, and the ultimate offer.
 
-In the demo, this split is visible in the data. The broker-side audit log records everything up to and including consent and submission. The lender-side decision rationale (in a live deployment) sits with the lender. For the Handbook texts, [PRIN](https://handbook.fca.org.uk/handbook/PRIN/) and [PRIN 2A](https://handbook.fca.org.uk/handbook/prin2a) are authoritative.
+In the demo, this split is visible in the data. The broker-side audit log records everything up to and including consent and submission. The lender-side decision rationale (in a live deployment) sits with the lender. For the Handbook texts, [PRIN](https://www.handbook.fca.org.uk/handbook/PRIN/) and [PRIN 2A](https://www.handbook.fca.org.uk/handbook/PRIN/2A.html) are authoritative.

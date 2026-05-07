@@ -27,16 +27,22 @@ Every file outside `lib/decision-engine.ts`. Specifically:
 Concentrated in [`lib/decision-engine.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/decision-engine.ts):
 
 ```ts
-const LENDERS = [
-  { id: "bnp-paribas-prime-1", name: "BNP Paribas Prime 1", rateCard: { ... }, ... },
-  { id: "this-bank-prime-2",   name: "This Bank Prime 2",   rateCard: { ... }, ... },
-  { id: "propensio-sub-prime-1", name: "Propensio Sub-Prime 1", rateCard: { ... }, ... },
+const LENDERS: LenderProfile[] = [
+  { name: "BNP Paribas", position: "Prime Priority 1", productCode: "IBC",
+    minAmount: 2000, maxAmount: 25000, minTerm: 36, maxTerm: 180,
+    baseAprPct: 9.9, amountAprStep: { per: 5000, bps: -25 } },
+  { name: "This Bank", position: "Prime Priority 2", productCode: "IBC",
+    minAmount: 1000, maxAmount: 50000, minTerm: 24, maxTerm: 180,
+    baseAprPct: 11.4, amountAprStep: { per: 5000, bps: -20 } },
+  { name: "Propensio", position: "Sub-Prime 1", productCode: "IBC",
+    minAmount: 1000, maxAmount: 20000, minTerm: 24, maxTerm: 120,
+    baseAprPct: 18.9, amountAprStep: { per: 5000, bps: -10 } },
 ];
 
-export function runWaterfall({ caseState, fromIndex, scenario }): WaterfallResult {
+export function runWaterfall({ caseState, fromIndex, scenario }: RunWaterfallInput): WaterfallResult {
   // For each lender from fromIndex onwards:
-  //   Apply rate card to the case
-  //   Either approve as requested, counter, or decline
+  //   Apply rate card to the case (baseAprPct + amountAprStep tier)
+  //   simulateLenderResponse decides: approve as requested, counter, or decline
   // Returns sequential results until first non-declined or exhaustion
 }
 ```
@@ -66,12 +72,13 @@ Three places to swap mock for real:
 
 ### 1. Lender panel
 
-[`lib/decision-engine.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/decision-engine.ts). The `runWaterfall` function would take a panel of `LenderAdapter` interfaces:
+[`lib/decision-engine.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/decision-engine.ts). The `runWaterfall` function would take a panel of `LenderAdapter` interfaces (see [Decision API](/implementation/lenders/decision-api/) for the full contract):
 
 ```ts
 interface LenderAdapter {
-  id: string;
   name: string;
+  position: "Prime Priority 1" | "Prime Priority 2" | "Sub-Prime 1" | "Sub-Prime 2";
+  productCode: "IFC" | "BNPL" | "IBC";
   decide(application: ApplicationPayload): Promise<WaterfallStepOutcome>;
 }
 ```

@@ -10,7 +10,7 @@ A Data Protection Impact Assessment (DPIA) is required under UK GDPR Article 35 
 The ICO's screening criteria flag a DPIA as required when processing involves any of nine listed factors. A Lending Agent deployment hits at least five of them simultaneously:
 
 1. **Innovative technology**. An LLM-mediated journey is innovative both as a technology and as an application of an existing technology to a regulated process. The ICO has been explicit that AI applications that influence significant decisions about individuals trigger a DPIA.
-2. **Automated decision-making with significant effects**. Even when the final credit decision is made by a lender, the agent's gate decisions (eligibility, quote band, vulnerability routing) produce significant effects in the Article 22 sense. ICO draft guidance on [automated decision-making](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/automated-decision-making-and-profiling/) reflects the amendments introduced by the Data (Use and Access) Act 2025.
+2. **Automated decision-making with significant effects**. Even when the final credit decision is made by a lender, the agent's gate decisions (eligibility, quote band, vulnerability routing) produce significant effects in the Articles 22A to 22D sense (the rewritten ADM regime introduced by the [Data (Use and Access) Act 2025](https://www.legislation.gov.uk/ukpga/2025/18/contents/enacted), in force from 5 February 2026). The DUAA framework is more permissive than the original Article 22 but mandates safeguards (information rights, representations, human intervention, contestation), all of which need to be reflected in the DPIA's mitigation register. The ICO's [draft updated guidance](https://ico.org.uk/about-the-ico/ico-and-stakeholder-consultations/2026/03/ico-consultation-on-the-draft-guidance-about-automated-decision-making-including-profiling/) is the working reference; final guidance is expected in 2026.
 3. **Special category data**. Vulnerability indicators frequently reveal health information; see [UK GDPR](./uk-gdpr).
 4. **Vulnerable data subjects**. Credit applicants in financial difficulty are a recognised vulnerable cohort under the FCA's Consumer Duty.
 5. **Large-scale processing**. A retail-finance broker processes large volumes of applications routinely.
@@ -53,7 +53,7 @@ A non-exhaustive list:
 - **Re-identification through logs**: token traces, audit identifiers, or replay artefacts could allow re-identification.
 - **Sub-processor risk**: data passed to Anthropic transits and may be temporarily logged.
 - **Cross-border transfer risk**: see [sub-processors](./sub-processors) for the IDTA / DPF position.
-- **Discrimination and bias**: an agent that varies tone or routing by inferred attributes could produce disparate treatment.
+- **Discrimination and bias**: an agent that varies tone or routing by inferred attributes could produce disparate treatment. Beyond UK GDPR's fairness principle, [section 19 of the Equality Act 2010](https://www.legislation.gov.uk/ukpga/2010/15/section/19) prohibits indirect discrimination unless the firm can show its practice is a proportionate means of achieving a legitimate aim. The replay engine (see [safety/model-evaluations](/safety/model-evaluations)) is the operational mechanism for detecting these patterns.
 
 For each risk, score likelihood and severity, identify the affected rights, and decide whether the risk is acceptable, mitigated, or requires consultation with the ICO under Article 36.
 

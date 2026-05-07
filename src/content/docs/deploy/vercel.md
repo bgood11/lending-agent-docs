@@ -69,25 +69,30 @@ This connects the Vercel project to your GitHub fork. After connecting, every pu
 
 Per customer journey:
 
-- ~10-20 model calls (each ~£0.001 at current Sonnet 4.6 rates)
-- Total: roughly £0.02 per completed journey
+- ~10-20 model calls. Each turn is roughly 2-3K input tokens (system prompt + conversation history + system notes) and up to 900 output tokens.
+- At current Claude Sonnet 4.6 list rates (input $3/MTok, output $15/MTok), a single turn is ~£0.01. A full journey lands around £0.10-£0.20 in raw model spend.
 
-The replay engine adds calls on demand. A 5-run replay across 3 disclosures = 15 model calls = ~£0.015 per replay run.
+The replay engine adds calls on demand. A 5-run replay across 3 disclosures is 15 model calls at ~£0.005 each, so roughly £0.07 per replay run.
 
-For a demo deployment with low traffic, expect monthly costs in pounds, not pence and not tens of pounds.
+For a demo deployment with low traffic, expect monthly costs in single-digit pounds. For a production deployment processing hundreds of journeys a day, model calls are the dominant cost line. Prompt caching on the system prompt (shared across every turn) cuts the input bill substantially; see [Production hardening](/deploy/production-hardening/) for the longer cost-control list.
 
-For higher-traffic deployments, the cost driver is model calls. Caching and batching strategies can reduce this; see [Production hardening](/deploy/production-hardening/).
+These figures are list prices and will move. Always check current Anthropic pricing before quoting a cost figure to a stakeholder.
 
 ## Vercel's "personal" vs "team" scopes
 
 Vercel has two scope types: personal (free hobby tier) and team. The demo runs fine on personal.
 
-If you want commercial use (custom domains beyond personal-account limits, enhanced support, more aggressive caching), upgrade the project's scope to a team. The CLI flow is:
+If you want commercial use (custom domains beyond personal-account limits, enhanced support, more aggressive caching), move the project to a team. The CLI flow is:
 
 ```bash
-vercel teams add lending-agent
-vercel link --scope your-team-name
+# Switch the active scope to your team (one-off, persisted in ~/.vercel)
+vercel switch your-team-slug
+
+# Re-link the project under the team scope
+vercel link --scope your-team-slug
 ```
+
+If the team doesn't exist yet, create it via the dashboard at vercel.com/teams; the CLI doesn't create teams.
 
 ## Build configuration
 
@@ -100,7 +105,7 @@ If you want to customise:
 - `outputDirectory`: defaults to `.next`
 - `framework`: detected as `nextjs`
 
-Vercel's TypeScript config (`vercel.ts`) is supported. The demo doesn't ship one because the defaults are correct.
+If you need to customise these, use `vercel.json` at the repo root or set them in the project settings on the Vercel dashboard. The demo doesn't ship a `vercel.json` because the auto-detected defaults are correct.
 
 ## Logs and monitoring
 

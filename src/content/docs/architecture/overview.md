@@ -44,6 +44,41 @@ If you take only one thing from this section, take that. Everything else (reconc
               └─────────────────────┘
 ```
 
+### Turn-level sequence
+
+The customer chat route is the single hottest path. One full request looks like this (mermaid source; renders as a sequence diagram with mermaid support, otherwise readable as code):
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UI as Customer page
+    participant API as POST /api/chat/customer
+    participant Store as Server store
+    participant Recon as reconcileSession
+    participant Model as Anthropic
+    participant Parser as stripEventTags
+
+    UI->>API: { sessionId, seed, userMessage?, directEvents? }
+    API->>Store: hydrateFromSeed(seed)
+    API->>Store: applyEvents(directEvents)
+    API->>Recon: reconcileSession({ allowSubmit: false })
+    Recon-->>Store: applyEvents (R1, R2 if needed)
+    API->>API: build system notes from directEvents
+    API->>API: build model history (filter empty, collapse, end on user)
+    API->>Model: generateText(systemPrompt, history)
+    Model-->>API: assistant text (with optional <agent-event/> tags)
+    API->>Parser: stripEventTags(text)
+    Parser-->>API: { display, events }
+    API->>Store: applyEvents(events)
+    API->>Recon: reconcileSession({ allowSubmit: true })
+    Recon-->>Store: applyEvents + setWaterfall (R3 if needed)
+    API->>Store: appendCustomerMessage(display) if non-empty
+    API->>Store: buildCaseSeed(...)
+    API-->>UI: { case, assistantMessage, events, customerMessages, seed }
+```
+
+Two reconciliations bracket the model call: one read-only before, one submission-allowed after. That second pass is what runs the waterfall when every gate has been satisfied but the model never emitted `submit_application`. See [Reconciliation](/architecture/reconciliation/) for why.
+
 ## State as the source of truth
 
 `CaseState` ([lib/types.ts](https://github.com/bgood11/lending-agent/blob/main/lib/types.ts)) is what the journey produces. Every meaningful thing that's happened lives there:
@@ -121,6 +156,6 @@ If you're new to the codebase, read in this order:
 
 1. [`lib/types.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/types.ts): the shape of everything
 2. [`lib/system-prompts.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/system-prompts.ts): the model's instructions
-3. [`lib/reconcile.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/reconcile.ts): the centralpiece
+3. [`lib/reconcile.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/reconcile.ts): the centrepiece
 4. [`app/api/chat/customer/route.ts`](https://github.com/bgood11/lending-agent/blob/main/app/api/chat/customer/route.ts): how a turn flows
 5. [`lib/decision-engine.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/decision-engine.ts): the only mock boundary

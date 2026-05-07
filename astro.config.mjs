@@ -5,6 +5,9 @@ import starlight from '@astrojs/starlight';
 // https://astro.build/config
 export default defineConfig({
 	site: 'https://lending-agent-docs.vercel.app',
+	markdown: {
+		syntaxHighlight: { excludeLangs: ['mermaid'] },
+	},
 	integrations: [
 		starlight({
 			title: 'Lending Agent',
@@ -13,6 +16,41 @@ export default defineConfig({
 			logo: { src: './src/assets/logo.svg', replacesTitle: false },
 			favicon: '/favicon.svg',
 			customCss: ['./src/styles/custom.css'],
+			head: [
+				{
+					tag: 'script',
+					attrs: { type: 'module' },
+					content: `
+						import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+						function renderMermaid() {
+							const theme = document.documentElement.dataset.theme === 'dark' ? 'dark' : 'default';
+							mermaid.initialize({ startOnLoad: false, theme });
+							const blocks = document.querySelectorAll('pre > code.language-mermaid:not([data-mermaid-rendered])');
+							blocks.forEach(async (code, i) => {
+								const pre = code.parentElement;
+								const id = 'mermaid-' + Math.random().toString(36).slice(2);
+								const source = code.textContent || '';
+								try {
+									const { svg } = await mermaid.render(id, source);
+									const wrapper = document.createElement('div');
+									wrapper.className = 'mermaid';
+									wrapper.innerHTML = svg;
+									pre.replaceWith(wrapper);
+								} catch (err) {
+									code.setAttribute('data-mermaid-rendered', 'error');
+									console.error('mermaid render failed', err);
+								}
+							});
+						}
+						if (document.readyState === 'loading') {
+							document.addEventListener('DOMContentLoaded', renderMermaid);
+						} else {
+							renderMermaid();
+						}
+						document.addEventListener('astro:after-swap', renderMermaid);
+					`,
+				},
+			],
 			social: [
 				{ icon: 'github', label: 'GitHub', href: 'https://github.com/bgood11/lending-agent' },
 				{ icon: 'external', label: 'Live demo', href: 'https://lending-agent.vercel.app' },

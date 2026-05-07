@@ -5,7 +5,7 @@ description: How the FCA FG21/1 framework and Consumer Duty obligations are impl
 
 The [FCA's finalised guidance on the fair treatment of vulnerable customers (FG21/1)](https://www.fca.org.uk/publications/finalised-guidance/guidance-firms-fair-treatment-vulnerable-customers) defines a vulnerable customer as someone who, due to their personal circumstances, is especially susceptible to harm, particularly when a firm is not acting with appropriate levels of care. The guidance asks firms to understand their target market, equip staff to recognise vulnerability, design products and communications around the needs of vulnerable customers, and monitor outcomes.
 
-The [FCA's AI approach](https://www.fca.org.uk/firms/ai-financial-services) makes clear that AI does not modify these obligations. A firm using AI in customer-facing journeys must still detect vulnerability signals and route customers appropriately. This page describes how Lending Agent does that in code.
+The [FCA's AI Update](https://www.fca.org.uk/publication/corporate/ai-update.pdf) (April 2024) makes clear that AI does not modify these obligations. A firm using AI in customer-facing journeys must still detect vulnerability signals and route customers appropriately. The [regulatory/vulnerable-customers](/regulatory/vulnerable-customers) page sets out the rule context; this page describes how Lending Agent implements the controls in code.
 
 ## Design principles
 
@@ -73,7 +73,7 @@ In the language of [FG21/1](https://www.fca.org.uk/publications/finalised-guidan
 - **Practical action**: the indicator card, withdraw-at-any-time, signposting, plain-language register.
 - **Monitoring and evaluation**: the audit log captures every interaction at the level needed to evidence outcomes.
 
-In the language of the [Consumer Duty as it applies to AI](https://www.fca.org.uk/firms/ai-financial-services), the four outcomes (products & services, price & value, consumer understanding, consumer support) are addressed respectively by the deterministic decision-engine, the price calculation in the engine, the verbatim disclosures and plain-language register, and the indicator card plus signposting.
+In the language of the [Consumer Duty (PS22/9)](https://www.fca.org.uk/publications/policy-statements/ps22-9-new-consumer-duty) and its non-Handbook guidance [FG22/5](https://www.fca.org.uk/publication/finalised-guidance/fg22-5.pdf), the four outcomes (products & services, price & value, consumer understanding, consumer support) are addressed respectively by the deterministic decision-engine, the price calculation in the engine, the verbatim disclosures and plain-language register, and the indicator card plus signposting. See [regulatory/consumer-duty](/regulatory/consumer-duty) for the rule mapping.
 
 ## Where to look in the code
 

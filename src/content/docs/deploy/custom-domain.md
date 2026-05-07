@@ -69,19 +69,25 @@ The demo doesn't enforce any particular split. In production, splitting the cust
 
 ## Redirects
 
-If you've got an existing domain with traffic and you're switching to a Vercel deploy, set up redirects from the old paths to the new ones. Vercel supports redirects via `vercel.ts` or `vercel.json`:
+If you've got an existing domain with traffic and you're switching to a Vercel deploy, set up redirects from the old paths to the new ones. For a Next.js project, the canonical place is `next.config.ts`:
 
 ```ts
-// vercel.ts
-import { routes, type VercelConfig } from '@vercel/config/v1';
+// next.config.ts
+import type { NextConfig } from "next";
 
-export const config: VercelConfig = {
-  redirects: [
-    routes.redirect('/old-path', '/new-path', { permanent: true }),
-    routes.redirect('/legacy-finance/(.*)', '/finance/$1', { permanent: true }),
-  ],
+const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      { source: "/old-path", destination: "/new-path", permanent: true },
+      { source: "/legacy-finance/:path*", destination: "/finance/:path*", permanent: true },
+    ];
+  },
 };
+
+export default nextConfig;
 ```
+
+`vercel.json` accepts the same shape if you would rather declare redirects at the platform layer.
 
 ## Domain ownership
 
@@ -105,19 +111,20 @@ Then add the DNS records the CLI prints. After propagation, the same deploy is r
 
 After adding a custom domain, the original `lending-agent-yourname.vercel.app` URL still works. It can either redirect to the custom domain (recommended for cleanliness) or stay accessible (useful for testing without DNS in the loop).
 
-To redirect:
+To redirect, use the `has` matcher in `next.config.ts` to scope the rule to the Vercel-generated host:
 
 ```ts
-// vercel.ts
-export const config: VercelConfig = {
-  redirects: [
-    routes.redirect(
-      'https://lending-agent-yourname.vercel.app/(.*)',
-      'https://yourdomain.co.uk/$1',
-      { permanent: true }
-    ),
-  ],
-};
+// next.config.ts
+async redirects() {
+  return [
+    {
+      source: "/:path*",
+      has: [{ type: "host", value: "lending-agent-yourname.vercel.app" }],
+      destination: "https://yourdomain.co.uk/:path*",
+      permanent: true,
+    },
+  ];
+}
 ```
 
 ## Multiple domains, one deploy

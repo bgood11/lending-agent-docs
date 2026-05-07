@@ -89,7 +89,7 @@ Response:
 
 ### `POST /api/chat/customer`
 
-Customer-side chat turn. The main route.
+Customer-side chat turn. The main route. Runs on `runtime: "nodejs"` with `maxDuration: 60` seconds. A single auto-retry (with 800ms backoff) absorbs transient Anthropic failures.
 
 Body:
 
@@ -100,7 +100,11 @@ Body:
   isFirstTurn?: boolean;
   demoScenario?: "auto" | "clean" | "counter" | "decline";
   seed?: string;
-  directEvents?: AgentEvent[];
+  /**
+   * Loose-typed in the route handler (not narrowed to AgentEvent at the
+   * boundary), then routed through applyEvents which validates per-case.
+   */
+  directEvents?: Array<{ type: string; data?: Record<string, unknown> }>;
 }
 ```
 
@@ -157,7 +161,7 @@ See [Audit & replay](/product/audit-and-replay/).
 
 ### `POST /api/audit/[sessionId]/replay`
 
-Run statistical replay across the case's disclosures.
+Run statistical replay across the case's disclosures. Runs on `runtime: "nodejs"` with `maxDuration: 120` seconds (longer than the chat route because it makes up to `n` model calls per disclosure sequentially).
 
 Body:
 
@@ -167,6 +171,8 @@ Body:
   seed?: string;
 }
 ```
+
+Returns 400 if the case has no recorded disclosures yet ("complete the journey first"). The route does not auto-submit; it always reads case state and replays against the recorded disclosure list.
 
 Response:
 

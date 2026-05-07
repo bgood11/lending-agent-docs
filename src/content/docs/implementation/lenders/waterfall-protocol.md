@@ -22,9 +22,9 @@ interface ApplicationPayload {
     projectValue: number;            // £ pence-rounded
     depositAmount: number;
     netLoanAmount: number;
-    productSpec: "panels_only" | "panels_battery" | "battery_only" | string;
+    productSpec: "panels_only" | "panels_battery" | "panels_battery_ev" | "panels_battery_ev_other";
     systemKwp?: number;
-    systemBatteryKwh?: number;
+    batteryKwh?: number;
   };
 
   // Requested terms (the customer's quote)
@@ -58,10 +58,14 @@ interface ApplicationPayload {
 
   // Financial facts
   financial: {
-    employmentStatus: string;
+    employmentStatus: "Employed" | "Self-employed" | "Retired" | "Unemployed" | "Other";
     annualIncome: number;
     monthlyOutgoings: number;
-    existingCommitments: number;
+    /**
+     * Free-text in the demo case state; production deployments should
+     * negotiate a structured shape per panel before going live.
+     */
+    existingCommitments: string;
   };
 
   // Consents and disclosures
@@ -86,6 +90,8 @@ interface ApplicationPayload {
 ```
 
 This is the entire wire payload. It is structured, predictable, and small.
+
+The shape above is the production contract a real lender integration will see. The demo's mock waterfall (`lib/decision-engine.ts`) does not call out to an HTTP endpoint, so the payload is constructed in-process from `CaseState` and consumed directly by `simulateLenderResponse`. The first step in any production swap is to add an `ApplicationPayload` builder that lifts `CaseState` into this wire shape, then to call adapters with the structured payload only.
 
 ## What you do not receive
 

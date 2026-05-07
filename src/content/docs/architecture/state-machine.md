@@ -10,17 +10,17 @@ description: CaseState as the source of truth, with status transitions driven by
 | State | Meaning | Triggered by |
 | --- | --- | --- |
 | `intake` | Initial state, no facts captured | session creation |
-| `awaiting_customer` | Installer handed off, customer hasn't started | `installer_handoff_complete` |
-| `customer_active` | Customer has started the journey | `record_personal_facts` or `record_financial_facts` |
-| `quote_ready` | Eligibility passed, quote configurator showing | `record_eligibility` (all yes) |
+| `awaiting_customer` | Installer handed off, customer hasn't started | `installer_handoff_complete` or `generate_customer_link` |
+| `customer_active` | Customer has started the journey | `record_personal_facts` or `record_financial_facts` (only when current status is `awaiting_customer`) |
+| `quote_ready` | Eligibility passed, quote configurator showing | `record_eligibility` (all yes); also held across `record_provisional_quote` |
 | `submitting` | Application submitted, waterfall about to run | `submit_application` |
-| `waterfall_running` | Waterfall has run, awaiting customer decision | `setWaterfall()` with no acceptance or counter |
+| `waterfall_running` | Waterfall is iterating lenders | `setWaterfall()` with no acceptance, no counter, not exhausted; also re-entered after `refuse_counter_offer` |
 | `awaiting_counter_decision` | Counter-offer presented, customer choosing | `setWaterfall()` with `awaitingCounterDecision: true` |
-| `selected` | Customer accepted an offer | `select_offer` or `accept_counter_offer` |
+| `selected` | Customer accepted an offer | `select_offer`, `accept_counter_offer`, or `setWaterfall()` with an `acceptedOffer` |
 | `declined` | Waterfall exhausted, no offer | `setWaterfall()` with `exhausted: true` |
 | `ineligible` | Eligibility failed | `record_eligibility` (any no) |
 | `withdrawn` | Customer withdrew | `withdraw` |
-| `complete` | Generic terminal | `case_complete` |
+| `complete` | Generic terminal | `case_complete` (only fires if not already in a more specific terminal state) |
 
 ## Transition diagram
 
@@ -42,6 +42,34 @@ intake ──► awaiting_customer ──► customer_active ──► quote_rea
                                                                                    on refuse)
 
 withdraw can fire from any non-terminal state and lands in: withdrawn
+```
+
+The same flow as a mermaid state diagram (rendered when the docs site builds with mermaid support; otherwise readable as source):
+
+```mermaid
+stateDiagram-v2
+    [*] --> intake
+    intake --> awaiting_customer: installer_handoff_complete
+    awaiting_customer --> customer_active: record_personal_facts / record_financial_facts
+    customer_active --> quote_ready: record_eligibility (all yes)
+    customer_active --> ineligible: record_eligibility (any no)
+    quote_ready --> submitting: submit_application
+    submitting --> waterfall_running: setWaterfall (no offer, not exhausted)
+    submitting --> selected: setWaterfall (acceptedOffer)
+    submitting --> awaiting_counter_decision: setWaterfall (awaitingCounterDecision)
+    submitting --> declined: setWaterfall (exhausted)
+    waterfall_running --> selected: setWaterfall (acceptedOffer)
+    waterfall_running --> awaiting_counter_decision: setWaterfall (awaitingCounterDecision)
+    waterfall_running --> declined: setWaterfall (exhausted)
+    awaiting_counter_decision --> selected: accept_counter_offer
+    awaiting_counter_decision --> waterfall_running: refuse_counter_offer
+    state "any non-terminal" as nt
+    nt --> withdrawn: withdraw
+    selected --> [*]
+    declined --> [*]
+    ineligible --> [*]
+    withdrawn --> [*]
+    complete --> [*]
 ```
 
 ## Terminal states

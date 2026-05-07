@@ -169,11 +169,14 @@ The full `AgentEvent` discriminated union from [`lib/types.ts`](https://github.c
 ```ts
 {
   type: "capture_consent",
-  data: { consentType: "credit_search" | string; granted: boolean }
+  data: {
+    consentType: "credit_search" | "data_sharing" | "marketing";
+    granted: boolean;
+  }
 }
 ```
 
-**Effect**: records explicit consent. Triggers reconciliation rules R1 and R2 (auto-ack the linked disclosure, auto-present pre-contract).
+**Effect**: records explicit consent. Replaces any prior consent of the same `consentType` (the store filters out the older record before pushing the new one). Triggers reconciliation rules R1 and R2 when `consentType === "credit_search"` and `granted === true` (auto-ack the linked disclosure, auto-present pre-contract). The demo only emits `credit_search`; the other two values exist in the type union for future expansion.
 
 ## Application + waterfall
 
@@ -191,7 +194,7 @@ The full `AgentEvent` discriminated union from [`lib/types.ts`](https://github.c
 { type: "accept_counter_offer", data: {} }
 ```
 
-**Effect**: accepts the lender's counter-offer terms. Sets `case.selectedOfferId`, `case.status = "selected"`.
+**Effect**: only fires if `caseState.waterfall.awaitingCounterDecision` is true. Calls `acceptCounter(waterfall)` to mark the latest counter-offer step as accepted, sets `case.selectedOfferId` from `waterfall.acceptedOffer.id`, and transitions `status` to `selected`.
 
 ### `refuse_counter_offer`
 
@@ -199,7 +202,7 @@ The full `AgentEvent` discriminated union from [`lib/types.ts`](https://github.c
 { type: "refuse_counter_offer", data: {} }
 ```
 
-**Effect**: clears the awaiting-counter flag. The route handler then advances the waterfall.
+**Effect**: clears `waterfall.awaitingCounterDecision`, sets `status = "waterfall_running"`. The route handler then re-runs `runWaterfall` with `fromIndex = waterfall.steps.length`, picking up at the next lender on the panel.
 
 ### `select_offer`
 
@@ -239,7 +242,7 @@ The full `AgentEvent` discriminated union from [`lib/types.ts`](https://github.c
 { type: "case_complete", data: {} }
 ```
 
-**Effect**: marks the journey as complete (if not already in a more specific terminal state).
+**Effect**: a no-op if the case is already in `declined`, `ineligible`, or `withdrawn`. Otherwise sets `status = "complete"` and, if no `caseOutcome` is set, records a fallback `{ kind: "completed", recordedAt }`. The agent emits this at the end of any path that didn't already lock to a more specific terminal state.
 
 ## Direct events vs model events
 

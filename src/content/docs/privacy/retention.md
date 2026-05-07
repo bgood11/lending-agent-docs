@@ -5,12 +5,15 @@ description: How long data is kept, why, and how the audit log interacts with th
 
 Retention sits at the intersection of two regimes that pull in opposite directions. UK GDPR Article 5(1)(e) (storage limitation) tells you to keep personal data no longer than necessary. The FCA's record-keeping rules tell you to keep evidence of regulated activities for years. Lending Agent's retention design is the result of resolving that tension at the level of individual data fields.
 
-## The two governing instruments
+## The governing instruments
 
 - **UK GDPR Article 5(1)(e)** requires that personal data be kept "in a form which permits identification of data subjects for no longer than is necessary". The ICO's [storage limitation](https://ico.org.uk/for-organisations/uk-gdpr-guidance-and-resources/data-protection-principles/a-guide-to-the-data-protection-principles/the-principles/storage-limitation/) guidance treats this as a positive obligation: you must define and document retention, not just promise to delete eventually.
 - **FCA SYSC 9.1** requires firms to "arrange for orderly records to be kept of its business and internal organisation". Records are to be retained "for as long as is relevant for the purposes for which they are made". For consumer credit specifically, the [CONC sourcebook](https://www.handbook.fca.org.uk/handbook/CONC/) sets out additional record-keeping obligations including retained creditworthiness assessments, customer communications, and consent records.
+- **The Limitation Act 1980** sets a six-year limitation period for simple-contract claims (and twelve years for contracts under seal), which is the practical lower bound on application-record retention for any broker that wants to defend a complaint or a court claim arising from the journey.
+- **The Money Laundering Regulations 2017 (regulation 40)** require records of CDD measures and supporting documents to be retained for **five years from the end of the business relationship or the date of the occasional transaction**, with limited exceptions where another retention basis applies. Brokers within MLR 2017 scope inherit this floor.
+- **The DUAA-amended UK GDPR** preserves the storage limitation principle unchanged. The 2025 reforms did not relax retention obligations.
 
-Where these regimes overlap, the FCA's expected retention determines the **maximum** that you can justify under UK GDPR; the GDPR principle determines the **minimum** that you should design for.
+Where these regimes overlap, the FCA, MLR, and limitation-period expectations determine the **maximum** that you can justify under UK GDPR; the GDPR principle determines the **minimum** that you should design for.
 
 ## Default retention windows for credit broking
 
@@ -29,6 +32,7 @@ The widely accepted default in the UK consumer credit industry is a six-year ret
 | Audit log entries | 6 years | SYSC 9 record-keeping |
 | Pre-contract documents (PCCI / SECCI) | 6 years | CONC 4 evidential requirement |
 | Marketing-related personal data | Until objection or 24 months of inactivity, whichever sooner | PECR + minimisation |
+| MLR 2017 CDD records | 5 years from end of business relationship | Regulation 40, Money Laundering Regulations 2017 |
 
 Each window must be set and documented by the broker controller. The defaults above are a starting point, not legal advice; calibrate to the firm's regulatory permissions and product mix.
 

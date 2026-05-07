@@ -39,7 +39,13 @@ A reasonable swap:
 
 The seed pattern continues to work as a recovery mechanism even with a primary store. It becomes a defensive fallback, not the source of truth.
 
-See [Cold-start recovery](/architecture/cold-start-recovery/) for the seed pattern's privacy implications. With a real store, the seed should be encrypted (the demo doesn't bother).
+See [Cold-start recovery](/architecture/cold-start-recovery/) for the seed pattern's privacy implications. With a real store, three things change about the seed:
+
+- It carries a signature (HMAC-SHA256 over the JSON, with a server-side key). `hydrateFromSeed` rejects any seed whose signature doesn't verify, so a tampered seed cannot inject case state.
+- It encrypts personal data fields (name, DOB, address, financial facts). The seed in browser history and referrers no longer leaks PII.
+- It includes a monotonic version (or a server-side timestamp + nonce) so a stale seed cannot be replayed against a newer in-memory state. Memory wins on ties when the seed is older.
+
+These three together turn the seed from "demo-grade recovery" into "production-grade authenticated state envelope".
 
 ## 2. Authentication
 
@@ -60,8 +66,9 @@ Vercel supports several auth integrations: NextAuth, Clerk, Auth0, Workos. Pick 
 
 ```ts
 interface LenderAdapter {
-  id: string;
   name: string;
+  position: Offer["position"];
+  productCode: Offer["productCode"];
   decide(application: ApplicationPayload): Promise<WaterfallStepOutcome>;
 }
 
@@ -70,7 +77,7 @@ async function runWaterfall({ caseState, fromIndex }) {
   for (let i = fromIndex ?? 0; i < panel.length; i++) {
     const adapter = panel[i];
     const outcome = await adapter.decide(buildApplicationPayload(caseState));
-    steps.push({ lender: adapter.name, outcome });
+    steps.push({ lender: adapter.name, position: adapter.position, outcome });
     if (outcome.kind !== "declined") break;
   }
   return { steps, ... };

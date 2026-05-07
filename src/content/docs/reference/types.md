@@ -42,7 +42,9 @@ type CaseStatus =
   | "intake"
   | "awaiting_customer"
   | "customer_active"
+  | "eligibility_check"            // declared but not currently set by applyEvents
   | "quote_ready"
+  | "application_data"             // declared but not currently set by applyEvents
   | "submitting"
   | "waterfall_running"
   | "awaiting_counter_decision"
@@ -52,6 +54,8 @@ type CaseStatus =
   | "withdrawn"
   | "complete";
 ```
+
+Two of the values (`eligibility_check`, `application_data`) are present in the union but not currently emitted by `applyEvents`. They were carried forward from an older flow shape; treat them as reserved for now. The ten values that the live state machine actually transitions through are documented in [State machine](/architecture/state-machine/).
 
 ## Subtypes
 
@@ -83,21 +87,21 @@ interface CustomerContact {
 
 interface PersonalFacts {
   fullName?: string;
-  dateOfBirth?: string;
+  dateOfBirth?: string;             // ISO YYYY-MM-DD
   postcode?: string;
   addressLine1?: string;
   addressLine2?: string;
   town?: string;
   county?: string;
-  propertyType?: string;
-  residentialStatus?: string;
+  propertyType?: "Detached" | "Semi-detached" | "Terraced" | "Flat" | "Bungalow";
+  residentialStatus?: "Owner" | "Mortgaged" | "Tenant" | "Other";
 }
 
 interface FinancialFacts {
-  employmentStatus?: string;
+  employmentStatus?: "Employed" | "Self-employed" | "Retired" | "Unemployed" | "Other";
   annualIncome?: number;
   monthlyOutgoings?: number;
-  existingCommitments?: string;
+  existingCommitments?: string;     // free-text in the demo; production may want a structured shape
   vulnerabilityIndicators?: string[];
   vulnerabilityNote?: string;
   vulnerabilityCapturedAt?: string;
@@ -116,11 +120,12 @@ interface EligibilityFacts {
 
 ```ts
 interface ProvisionalQuote {
-  amount: number;              // loan amount in pence-free GBP
+  amount: number;              // loan amount in whole-£ GBP (matches netLoanAmount)
   termMonths: number;
-  indicativeAprPct: number;    // typed as percent, e.g. 12.9
+  indicativeAprPct: number;    // typed as percent, e.g. 12.9. Best-available (Prime 1) rate.
   monthlyPayment: number;
   totalPayable: number;
+  estimatedMonthlySolarSavings?: number;
   capturedAt: string;
 }
 
@@ -133,11 +138,15 @@ interface EmailPreference {
 interface Offer {
   id: string;
   lender: string;
+  position: "Prime Priority 1" | "Prime Priority 2" | "Sub-Prime 1" | "Sub-Prime 2";
+  productCode: "IFC" | "BNPL" | "IBC";
   aprPct: number;
   termMonths: number;
   monthlyPayment: number;
   totalPayable: number;
-  // ... other lender-specific fields
+  netLoanAmount: number;
+  estimatedMonthlySolarSavings?: number;
+  netCostPerMonth?: number;          // monthlyPayment - estimatedMonthlySolarSavings, if both known
 }
 ```
 
@@ -151,7 +160,7 @@ interface DisclosureRecord {
 }
 
 interface ConsentRecord {
-  type: "credit_search" | string;
+  type: "credit_search" | "data_sharing" | "marketing";
   granted: boolean;
   capturedAt: string;
 }
@@ -178,12 +187,13 @@ interface WaterfallResult {
 
 interface WaterfallStep {
   lender: string;
+  position: string;
   outcome: WaterfallStepOutcome;
 }
 
 type WaterfallStepOutcome =
   | { kind: "approved_as_requested"; offer: Offer }
-  | { kind: "approved_with_counter"; offer: Offer }
+  | { kind: "approved_with_counter"; offer: Offer; reason: string }
   | { kind: "declined"; reason: string };
 ```
 
@@ -223,25 +233,26 @@ The discriminated union for all events. Full per-event payloads in [Event taxono
 type AgentEvent =
   | { type: "record_project_facts"; data: Partial<ProjectFacts> }
   | { type: "record_customer_contact"; data: Partial<CustomerContact> }
-  | { type: "generate_customer_link"; data: {} }
-  | { type: "installer_handoff_complete"; data: {} }
-  | { type: "record_eligibility"; data: Omit<EligibilityFacts, "capturedAt"> }
-  | { type: "record_provisional_quote"; data: { termMonths: number } }
-  | { type: "record_email_preference"; data: { wantsEmailCopy: boolean; email?: string } }
+  | { type: "generate_customer_link"; data?: Record<string, never> }
+  | { type: "installer_handoff_complete"; data?: Record<string, never> }
   | { type: "record_personal_facts"; data: Partial<PersonalFacts> }
   | { type: "record_financial_facts"; data: Partial<FinancialFacts> }
-  | { type: "record_vulnerability_indicators"; data: { indicators: string[]; note?: string } }
   | { type: "present_disclosure"; data: { id: string } }
   | { type: "acknowledge_disclosure"; data: { id: string } }
-  | { type: "capture_consent"; data: { consentType: string; granted: boolean } }
-  | { type: "submit_application"; data: {} }
-  | { type: "accept_counter_offer"; data: {} }
-  | { type: "refuse_counter_offer"; data: {} }
-  | { type: "select_offer"; data: { offerId: string } }
-  | { type: "withdraw"; data: { reason?: string } }
+  | { type: "capture_consent"; data: { consentType: ConsentRecord["type"]; granted: boolean } }
+  | { type: "record_eligibility";
+      data: { isOver18: boolean; isUkResident: boolean; isHomeowner: boolean; isEmployed: boolean } }
+  | { type: "record_provisional_quote"; data: { termMonths: number } }
+  | { type: "record_email_preference"; data: { wantsEmailCopy: boolean; email?: string } }
+  | { type: "submit_application"; data?: Record<string, never> }
+  | { type: "accept_counter_offer"; data?: Record<string, never> }
+  | { type: "refuse_counter_offer"; data?: Record<string, never> }
+  | { type: "request_decision"; data?: Record<string, never> }     // legacy
+  | { type: "select_offer"; data: { offerId: string } }            // legacy parallel-offers
+  | { type: "record_vulnerability_indicators"; data: { indicators: string[]; note?: string } }
+  | { type: "withdraw"; data?: { reason?: string } }
   | { type: "case_outcome"; data: { kind: CaseOutcomeKind; reason?: string } }
-  | { type: "case_complete"; data: {} }
-  | { type: "request_decision"; data: {} };  // legacy
+  | { type: "case_complete"; data?: Record<string, never> };
 ```
 
 ## Audit types
@@ -262,6 +273,7 @@ interface AuditTimelineEntry {
     | "vulnerability_recorded"
     | "submission"
     | "waterfall_step"
+    | "counter_decision"
     | "selected"
     | "withdrawn"
     | "completed"

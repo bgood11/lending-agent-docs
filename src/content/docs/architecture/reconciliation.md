@@ -1,9 +1,9 @@
 ---
 title: Reconciliation
-description: One pure function with three rules that closes any gaps the model leaves open. The centralpiece of the architecture.
+description: One pure function with three rules that closes any gaps the model leaves open. The centrepiece of the architecture.
 ---
 
-[`lib/reconcile.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/reconcile.ts) is the most important file in the codebase. It's the centralpiece of the architecture and the reason the journey recovers from any model-side confusion automatically.
+[`lib/reconcile.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/reconcile.ts) is the most important file in the codebase. It's the centrepiece of the architecture and the reason the journey recovers from any model-side confusion automatically.
 
 ## What it does
 
@@ -38,7 +38,18 @@ Why: the journey ordering is fixed. After consent, the next gate is pre-contract
 
 ### R3: submit when all gates pass
 
-If `pre_contract_summary` is acknowledged AND `credit_search` consent is granted AND personal facts are captured (`personal.fullName` is set) AND financial facts are captured (`financial.employmentStatus` is set) AND a quote was chosen (`provisionalQuote` is set) AND no waterfall has run yet (`waterfall` is undefined), then run the waterfall.
+If every precondition holds, run the waterfall. The exact preconditions, mirrored from [`reconcile.ts`](https://github.com/bgood11/lending-agent/blob/main/lib/reconcile.ts):
+
+| Check | Field | True when |
+| --- | --- | --- |
+| Consent granted | `consents` | An entry with `type === "credit_search"` and `granted === true` |
+| Pre-contract acked | `disclosures` | An entry with `id === "pre_contract_summary"` and an `acknowledgedAt` |
+| Personal facts | `personal.fullName` | Non-empty |
+| Financial facts | `financial.employmentStatus` | Non-empty |
+| Quote chosen | `provisionalQuote` | Defined |
+| No waterfall yet | `waterfall` | Undefined |
+
+If all six hold, R3 calls `runWaterfall` and `setWaterfall`, returning a JSON narration block (`requestedQuote`, `steps`, `awaitingCounterDecision`, `acceptedOffer`, `exhausted`, `currentStatus`) the chat route surfaces to the model so the next turn narrates the lender outcome.
 
 This rule only fires when `allowSubmit: true` is passed. Inspecting state (audit pages, session GETs) must NEVER auto-run the waterfall, because that would cause "viewing a stalled case" to "fund the application", which is a problem.
 
