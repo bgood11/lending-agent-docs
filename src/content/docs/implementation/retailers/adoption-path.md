@@ -17,7 +17,7 @@ Each route has the same compliance failure mode: the broker cannot prove what wa
 
 ## The alternative: an agent on the doorstep
 
-Lending Agent flips the model. The installer runs a short installer-side intake (project value, deposit, customer contact). That hands off via SMS link to a customer-side agent. The customer talks to the agent, on their own phone, in their own time, and the agent walks them through eligibility, quote choice, application, vulnerability check, consent, and waterfall submission. Every state-mutating event is recorded against a single `CaseState` (see [/architecture/case-state/](/architecture/case-state/)).
+Lending Agent flips the model. The installer runs a short installer-side intake (project value, deposit, customer contact). That hands off via SMS link to a customer-side agent. The customer talks to the agent, on their own phone, in their own time, and the agent walks them through eligibility, quote choice, application, vulnerability check, consent, and waterfall submission. Every state-mutating event is recorded against a single `CaseState` (see [/reference/types/](/reference/types/)).
 
 The doorstep effect is compositional:
 
@@ -59,7 +59,7 @@ Be explicit about scope:
 - It does not replace the doorstep conversation. The installer still surveys, prices, and sells.
 - It does not handle the install-and-fund leg. The lender's payout and the installer's invoice happen outside the agent.
 - It does not (in this build) handle joint applications, business finance, or non-standard property types. Those route to a human broker.
-- It does not give regulated advice. The agent is information-only, on the broker's permission. See [/safety/scope-and-refusals/](/safety/scope-and-refusals/).
+- It does not give regulated advice. The agent is information-only, on the broker's permission. See [/safety/threat-model/](/safety/threat-model/).
 
 ## Pricing model: open question
 

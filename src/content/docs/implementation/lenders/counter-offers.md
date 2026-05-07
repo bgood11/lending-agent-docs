@@ -108,7 +108,7 @@ The counter-offer body is composed by the lender's adapter, not by the broker. T
 
 Cross-link to [/implementation/lenders/decision-api/](/implementation/lenders/decision-api/) for the adapter contract. The adapter's `decide` function returns a `WaterfallStepOutcome` whose body is fully populated; the broker does not modify the offer fields.
 
-The broker does enforce one constraint: the counter must be at a `netLoanAmount` equal to the requested amount. The broker does not relay counters that change the loan principal. If the lender wants to offer at a different amount, that is a decline-plus-suggestion, handled differently. Cross-link to [/architecture/decision-engine/](/architecture/decision-engine/) and the suggestion mechanic.
+The broker does enforce one constraint: the counter must be at a `netLoanAmount` equal to the requested amount. The broker does not relay counters that change the loan principal. If the lender wants to offer at a different amount, that is a decline-plus-suggestion, handled differently. Cross-link to [/architecture/mock-vs-real/](/architecture/mock-vs-real/) and the suggestion mechanic.
 
 ## Multiple counters in one journey
 

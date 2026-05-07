@@ -227,4 +227,4 @@ These feed into commercial conversations with the lender (panel reordering, term
 - [/implementation/lenders/waterfall-protocol/](/implementation/lenders/waterfall-protocol/) for the wire payload.
 - [/implementation/lenders/counter-offers/](/implementation/lenders/counter-offers/) for offer composition.
 - [/implementation/brokers/lender-panel/](/implementation/brokers/lender-panel/) for the broker-side waterfall.
-- [/architecture/decision-engine/](/architecture/decision-engine/) for the demo's mock implementation that the adapters replace.
+- [/architecture/mock-vs-real/](/architecture/mock-vs-real/) for the demo's mock implementation that the adapters replace.

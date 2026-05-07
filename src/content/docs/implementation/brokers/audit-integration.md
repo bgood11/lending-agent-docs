@@ -157,7 +157,7 @@ The audit page validates the token, scopes the response to that single `sessionI
 
 ### Customer
 
-The customer has a right of access under GDPR Article 15. The broker has to be able to produce a copy of their case data on request. Cross-link to [/privacy/data-access/](/privacy/data-access/). The audit log is part of that response, but the format should be a structured export (PDF or JSON), not the raw timeline view used by compliance.
+The customer has a right of access under GDPR Article 15. The broker has to be able to produce a copy of their case data on request. Cross-link to [/privacy/data-flow/](/privacy/data-flow/). The audit log is part of that response, but the format should be a structured export (PDF or JSON), not the raw timeline view used by compliance.
 
 Build a separate "subject access export" endpoint that produces a customer-readable export from the same source data. Do not give customers direct access to the compliance audit page.
 
@@ -177,4 +177,4 @@ Each alert routes to the compliance team's queue with a link to the audit page. 
 - [/regulatory/replay-and-evidence/](/regulatory/replay-and-evidence/) for the regulatory framing.
 - [/implementation/brokers/disclosure-publishing/](/implementation/brokers/disclosure-publishing/) for the disclosure registry that anchors audit records.
 - [/privacy/retention/](/privacy/retention/) for how long records persist.
-- [/architecture/audit/](/architecture/audit/) for the demo's audit module.
+- [/product/audit-and-replay/](/product/audit-and-replay/) for the demo's audit module.

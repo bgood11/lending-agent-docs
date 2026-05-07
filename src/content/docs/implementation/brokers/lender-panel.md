@@ -202,7 +202,7 @@ The `WaterfallStepOutcome` union should grow a fourth variant for this: `{ kind:
 
 ## See also
 
-- [/architecture/decision-engine/](/architecture/decision-engine/) for the demo implementation.
+- [/architecture/mock-vs-real/](/architecture/mock-vs-real/) for the demo implementation.
 - [/implementation/lenders/decision-api/](/implementation/lenders/decision-api/) for the lender-side adapter contract.
 - [/implementation/lenders/counter-offers/](/implementation/lenders/counter-offers/) for counter-offer composition.
 - [/regulatory/conc/](/regulatory/conc/) for the consumer credit obligations the panel has to satisfy.

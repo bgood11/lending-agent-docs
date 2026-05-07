@@ -180,6 +180,6 @@ This separation keeps the broker's retry behaviour predictable without leaking t
 
 ## See also
 
-- [/architecture/case-state/](/architecture/case-state/) for the underlying `CaseState` shape.
+- [/reference/types/](/reference/types/) for the underlying `CaseState` shape.
 - [/implementation/brokers/audit-integration/](/implementation/brokers/audit-integration/) for the corresponding broker-side integration.
 - [/privacy/data-minimisation/](/privacy/data-minimisation/) for what does and does not flow into the retailer's webhook payloads.
